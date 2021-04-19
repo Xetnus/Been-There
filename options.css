@@ -1,0 +1,54 @@
+#header {
+    margin-bottom: 2em;
+}
+
+h1 {
+    flex-basis: 100%;
+    text-align: center;
+}
+
+section {
+    margin-bottom: 3em;
+}
+
+@media only screen and (min-width: 1500px) {
+    .row {
+        width: 30%;
+    }
+}
+
+@media only screen and (max-width: 1500px) {
+    .row {
+        width: 50%;
+    }
+}
+
+.row {
+    margin: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+button {
+    flex-basis: content;
+}
+
+label {
+    flex-grow: 1;
+    flex-basis: content;
+}
+
+select {
+    flex-grow: 4;
+}
+
+input {
+    flex-grow: 4;
+}
+
+#export-btn, #import-btn {
+}
+
+#delete-btn {
+}

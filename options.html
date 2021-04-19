@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OSINT Utility for Google Maps</title>
+    <script src="options.js"></script>
+    <link rel="stylesheet" href="options.css">
+    <link rel="stylesheet" href="mini-css/mini-default.min.css">
+</head>
+
+<body>
+    <div id="header">
+        <div class="row">
+            <h1>Settings Page</h1>
+        </div>
+    </div>
+
+    <section id="case">
+        <div class="row">
+            <label for="case-select">Choose case</label>
+            <select id="case-select">
+                <option value="0">Default</option>
+            </select>
+        </div>
+        <div class="row">
+            <button id="export-btn" class="primary tooltip bottom" aria-label="Downloads the case data as a CSV file.">Export</button>
+            <button id="import-btn" class="tertiary tooltip bottom" aria-label="Merge data that was previously exported into the active case.">Import</button>
+            <button id="delete-btn" class="secondary tooltip bottom" aria-label="Delete the case and all data associated with it.">Delete Case</button>
+        </div>
+    </section>
+
+    <section id="info">
+        <div class="row">
+            <label for="case-select">Information</label>
+            <p id="num_places"></p>
+        </div>
+        <div class="row">
+            <p id="bytes"></p>
+        </div>
+    </section>
+
+    <section id="add-case">
+        <div class="row">
+            <label for="case-name">Add case</label>
+            <input id="case-name" type="text" placeholder="Case name">
+            <button id="add-btn" class="tertiary">Add</button>
+        </div>
+    </section>
+</body>
+</html>

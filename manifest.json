@@ -1,0 +1,27 @@
+{
+  "manifest_version": 2,
+
+  "name": "OSINT Utility for Google Maps",
+  "description": "Logs the places you visit on Google Maps for auditing and record keeping.",
+  "version": "1.0",
+  "options_page": "options.html",
+
+  "browser_action": {
+    "default_icon": "map-pin-active.png",
+    "default_popup": "popup.html",
+    "default_title": "OSINT Utility for Google Maps"
+  },
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.google.com/*"],
+      "js": ["google.js"]
+    }
+  ],
+  "permissions": [
+   "storage", "unlimitedStorage", "webRequest", "tabs",
+   "https://maps.googleapis.com/maps/api/place/*"
+  ]
+}
