@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OSINT Utility for Google Maps</title>
+    <title>Been There - a Google Maps Utility</title>
+    <script src="utility.js"></script>
     <script src="options.js"></script>
     <link rel="stylesheet" href="options.css">
     <link rel="stylesheet" href="mini-css/mini-default.min.css">
@@ -10,7 +11,10 @@
 <body>
     <div id="header">
         <div class="row">
-            <h1>Settings Page</h1>
+            <h1>Been There - a Google Maps Utility</h1>
+        </div>
+        <div class="row">
+            <h2>Settings</h1>
         </div>
     </div>
 
@@ -18,7 +22,6 @@
         <div class="row">
             <label for="case-select">Choose case</label>
             <select id="case-select">
-                <option value="0">Default</option>
             </select>
         </div>
         <div class="row">
@@ -42,6 +45,8 @@
         <div class="row">
             <label for="case-name">Add case</label>
             <input id="case-name" type="text" placeholder="Case name">
+        </div>
+        <div class="row">
             <button id="add-btn" class="tertiary">Add</button>
         </div>
     </section>

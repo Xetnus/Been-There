@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
 
-  "name": "OSINT Utility for Google Maps",
+  "name": "Been There - a Google Maps Utility",
   "description": "Logs the places you visit on Google Maps for auditing and record keeping.",
   "version": "1.0",
   "options_page": "options.html",
@@ -9,7 +9,7 @@
   "browser_action": {
     "default_icon": "map-pin-active.png",
     "default_popup": "popup.html",
-    "default_title": "OSINT Utility for Google Maps"
+    "default_title": "Been There - a Google Maps Utility"
   },
   "background": {
     "scripts": ["background.js"]

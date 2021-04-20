@@ -1,5 +1,9 @@
-// const FINDPLACE = "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?%INPUT%&%INPUT_TYPE%&%FIELDS%&%API_KEY%";
-const STORAGE_KEY = "places";
+// Storage constants
+const LIST_CASES_KEY = "cases";
+const GET_ACTIVE_CASE_KEY = "active-case";
+const CASE_PREFIX_KEY = "case-"
+const DEFAULT_CASE_NAME = "Default"
+
 const EYEBALL_UNICODE = "\ud83d\udc41";
 const QUESTION_UNICODE = "\u2754";
 const UNSEEN_TOOLTIP = "You've never seen this place before."
@@ -18,18 +22,18 @@ function createIconElement(unicode, tooltip, color = "black") {
     return element;
 }
 
-function logPlaceID(/*jsonResponse,*/placeName, plusCode, phoneNumber) {
-    chrome.storage.local.get({[STORAGE_KEY]: [/* default value */]}, function(data) {
-        var places = data[STORAGE_KEY];
-        places.push({name: placeName, code: plusCode, phone: phoneNumber});
+function logPlaceID(placeName, plusCode, phoneNumber) {
+    chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
+        var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
+        chrome.storage.local.get({[caseKey]: []}, function(data) {
+            var places = data[caseKey];
+            places.push({name: placeName, code: plusCode, phone: phoneNumber});
 
-        chrome.storage.local.set({[STORAGE_KEY]: places}, function() {
-            if (chrome.runtime.lastError) {
-                console.error("Unspecified error while storing Place Data");
-            }
-
-            chrome.storage.local.getBytesInUse([STORAGE_KEY], function(num) {
-                console.log(num + " bytes");
+            chrome.storage.local.set({[caseKey]: places}, function() {
+                if (chrome.runtime.lastError) {
+                    console.log(chrome.runtime.lastError.message);
+                    console.error("Unspecified error while storing Place Data");
+                }
             });
         });
     });
@@ -37,44 +41,35 @@ function logPlaceID(/*jsonResponse,*/placeName, plusCode, phoneNumber) {
 
 // Return true if this plus code has been seen before
 function checkIfSeen(placeName, plusCode, phoneNumber) {
-    chrome.storage.local.get({[STORAGE_KEY]: [/* default value */]}, function(data) {
-        var places = data[STORAGE_KEY];
+    chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
+        var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
+        chrome.storage.local.get({[caseKey]: []}, function(data) {
+            var places = data[caseKey];
 
-        // The place must match by plus code and name
-        var seen = false;
-        if (plusCode !== "")
-            seen = places.some(place => place.code === plusCode && place.name === placeName);
-        else if (phoneNumber !== "") {
-            seen = places.some(place => place.phone === phoneNumber && place.name === placeName);
-        }
-
-        if (!seen) {
-            console.log("NOT SEEN");
-            // var req_url = FINDPLACE;
-            // req_url = req_url.replace("%INPUT%", "input=" + encodeURIComponent(plusCode));
-            // req_url = req_url.replace("%INPUT_TYPE%", "inputtype=textquery");
-            // req_url = req_url.replace("%FIELDS%", "fields=place_id");
-            // req_url = req_url.replace("%API_KEY%", "key=" + API_KEY);
-            // console.info("MAKING API CALL");
-
-            // chrome.runtime.sendMessage(
-             // { message: 'apiCall', url: req_url },
-             // data => logPlaceID(data, plusCode, placeName)
-            // );
-            logPlaceID(placeName, plusCode, phoneNumber)
-            var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
-            if (headerTitleElement) {
-                var eyeElement = createIconElement(" " + EYEBALL_UNICODE, UNSEEN_TOOLTIP, "lightgreen");
-                headerTitleElement.appendChild(eyeElement);
+            var seen = false;
+            if (plusCode !== "")
+                seen = places.some(place => place.code === plusCode && place.name === placeName);
+            else if (phoneNumber !== "") {
+                seen = places.some(place => place.phone === phoneNumber && place.name === placeName);
             }
-        } else {
-            console.log("SEEN");
-            var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
-            if (headerTitleElement) {
-                var eyeElement = createIconElement(" " + EYEBALL_UNICODE, SEEN_TOOLTIP);
-                headerTitleElement.appendChild(eyeElement);
+
+            if (!seen) {
+                console.log("NOT SEEN");
+                logPlaceID(placeName, plusCode, phoneNumber)
+                var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
+                if (headerTitleElement) {
+                    var eyeElement = createIconElement(" " + EYEBALL_UNICODE, UNSEEN_TOOLTIP, "lightgreen");
+                    headerTitleElement.appendChild(eyeElement);
+                }
+            } else {
+                console.log("SEEN");
+                var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
+                if (headerTitleElement) {
+                    var eyeElement = createIconElement(" " + EYEBALL_UNICODE, SEEN_TOOLTIP);
+                    headerTitleElement.appendChild(eyeElement);
+                }
             }
-        }
+        });
     });
 }
 
@@ -134,23 +129,24 @@ chrome.runtime.onMessage.addListener(
             });
 
             var addQuestionIcons = function() {
-                chrome.storage.local.get({[STORAGE_KEY]: [/* default value */]}, function(data) {
-                    var places = data[STORAGE_KEY];
-                    var placesOnPage = document.body.querySelectorAll("div.section-place-result-container-summary");
-                    console.log(placesOnPage);
+                chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
+                    var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
+                    chrome.storage.local.get({[caseKey]: []}, function(data) {
+                        var places = data[caseKey];
+                        var placesOnPage = document.body.querySelectorAll("div.section-place-result-container-summary");
 
-                    placesOnPage.forEach(function(placeElement) {
-                        var nameElement = placeElement.querySelector("span");
-                        if (!nameElement.getAttribute("data-marked")) {
-                            // Because this page doesn't show plus codes, we can only match by name
-                            if (places.some(place => place.name === nameElement.innerText)) {
-                                console.log("seen " + nameElement.innerText);
-                                // Inserts question mark after the ratings/reviews line
-                                var quesElement = createIconElement(" " + QUESTION_UNICODE, QUESTION_TOOLTIP);
-                                nameElement.parentNode.insertBefore(quesElement, nameElement.nextSibling);
-                                nameElement.setAttribute("data-marked", "true");
+                        placesOnPage.forEach(function(placeElement) {
+                            var nameElement = placeElement.querySelector("span");
+                            if (!nameElement.getAttribute("data-marked")) {
+                                // Because this page doesn't show plus codes, we can only match by name
+                                if (places.some(place => place.name === nameElement.innerText)) {
+                                    // Inserts question mark after the ratings/reviews line
+                                    var quesElement = createIconElement(" " + QUESTION_UNICODE, QUESTION_TOOLTIP);
+                                    nameElement.parentNode.insertBefore(quesElement, nameElement.nextSibling);
+                                    nameElement.setAttribute("data-marked", "true");
+                                }
                             }
-                        }
+                        });
                     });
                 });
             }
@@ -168,50 +164,56 @@ chrome.runtime.onMessage.addListener(
             observer.observe(nodeToObserve, observerConfig);
         } else if (request.message === 'urlChangeGoogleHotelEntity') {
             console.log("hotel entity");
-            chrome.storage.local.get({[STORAGE_KEY]: [/* default value */]}, function(data) {
-                var places = data[STORAGE_KEY];
+            chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
+                var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
+                chrome.storage.local.get({[caseKey]: []}, function(data) {
+                    var places = data[caseKey];
 
-                var nameElement = document.body.querySelector("h1");
-                var phoneElement = nameElement.parentElement.parentElement.querySelector(":scope > div:nth-child(3) > div > span:nth-child(3)");
-                var phone = ""
-                if (phoneElement) { phone = phoneElement.innerText; }
+                    var nameElement = document.body.querySelector("h1");
+                    var phoneElement = nameElement.parentElement.parentElement.querySelector(":scope > div:nth-child(3) > div > span:nth-child(3)");
+                    var phone = ""
+                    if (phoneElement) { phone = phoneElement.innerText; }
 
-                if (places.some(place => place.name === nameElement.innerText && place.phone === phone)) {
-                    var eyeElement = createIconElement(" " + EYEBALL_UNICODE, SEEN_TOOLTIP);
-                    nameElement.appendChild(eyeElement);
-                }
+                    if (places.some(place => place.name === nameElement.innerText && place.phone === phone)) {
+                        var eyeElement = createIconElement(" " + EYEBALL_UNICODE, SEEN_TOOLTIP);
+                        nameElement.appendChild(eyeElement);
+                    }
+                });
             });
         } else if (request.message === 'urlChangeGoogleHotelList') {
-            chrome.storage.local.get({[STORAGE_KEY]: [/* default value */]}, function(data) {
-                var places = data[STORAGE_KEY];
+            chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
+                var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
+                chrome.storage.local.get({[caseKey]: []}, function(data) {
+                    var places = data[caseKey];
 
-                var wait_iter = MAX_WAIT_ITERATIONS;
-                var checkExist = setInterval(function() {
-                    var namesOnPage = document.body.querySelectorAll("h2");
-                    var numMarked = document.body.querySelectorAll("[data-marked='true']").length;
-                    wait_iter--;
+                    var wait_iter = MAX_WAIT_ITERATIONS;
+                    var checkExist = setInterval(function() {
+                        var namesOnPage = document.body.querySelectorAll("h2");
+                        var numMarked = document.body.querySelectorAll("[data-marked='true']").length;
+                        wait_iter--;
 
-                    // We need to wait for the panel elements to load. The number of names
-                    // on the page needs to be > 0 and the number of marked names should be
-                    // 0, since the panel doesn't carry over DOM elements on new pages.
-                    if (namesOnPage.length > 0 && numMarked == 0) {
-                        clearInterval(checkExist);
-                        namesOnPage.forEach(function(nameElement) {
-                            if (!nameElement.getAttribute("data-marked")) {
-                                // Because this page doesn't show plus codes, we can only match by name
-                                if (places.some(place => place.name === nameElement.innerText)) {
-                                    console.log("found " + nameElement.innerText);
-                                    // Inserts question mark after the ratings/reviews line
-                                    var quesElement = createIconElement(" " + QUESTION_UNICODE, QUESTION_TOOLTIP);
-                                    nameElement.parentNode.querySelector(":scope > div").appendChild(quesElement);
-                                    nameElement.setAttribute("data-marked", "true");
+                        // We need to wait for the panel elements to load. The number of names
+                        // on the page needs to be > 0 and the number of marked names should be
+                        // 0, since the panel doesn't carry over DOM elements on new pages.
+                        if (namesOnPage.length > 0 && numMarked == 0) {
+                            clearInterval(checkExist);
+                            namesOnPage.forEach(function(nameElement) {
+                                if (!nameElement.getAttribute("data-marked")) {
+                                    // Because this page doesn't show plus codes, we can only match by name
+                                    if (places.some(place => place.name === nameElement.innerText)) {
+                                        console.log("found " + nameElement.innerText);
+                                        // Inserts question mark after the ratings/reviews line
+                                        var quesElement = createIconElement(" " + QUESTION_UNICODE, QUESTION_TOOLTIP);
+                                        nameElement.parentNode.querySelector(":scope > div").appendChild(quesElement);
+                                        nameElement.setAttribute("data-marked", "true");
+                                    }
                                 }
-                            }
-                        });
-                    } else if (wait_iter == 0) {
-                        clearInterval(checkExist);
-                    }
-                }, 100);
+                            });
+                        } else if (wait_iter == 0) {
+                            clearInterval(checkExist);
+                        }
+                    }, 100);
+                });
             });
         } else if (request.message === 'urlChangeOther') {
             last_place_name = "";

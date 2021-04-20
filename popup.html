@@ -1,15 +1,39 @@
 <!doctype html>
 <html>
   <head>
-    <title>OSINT Utility for Google Maps</title>
+    <title>Been There - a Google Maps Utility</title>
+    <script src="utility.js"></script>
     <script src="popup.js"></script>
     <link rel="stylesheet" type="text/css" href="popup.css"/>
+    <link rel="stylesheet" href="mini-css/mini-default.min.css">
   </head>
   <body>
-    <h1>OSINT</h1>
-    <button id="resetStorage">Reset Storage</button>
-    <button id="exportStorage">Export Storage</button>
-    <p id="bytes"></p>
-    <p id="num_places"></p>
+    <section id="header">
+        <div class="row">
+            <h1>Been There</h1>
+        </div>
+    </section>
+    <section id="case">
+        <div class="row">
+            <label for="case-select">Choose case:</label>
+        </div>
+        <div class="row">
+            <select id="case-select">
+            </select>
+        </div>
+    </section>
+    <section id="info">
+        <div class="row">
+            <p id="bytes"></p>
+        </div>
+        <div class="row">
+            <p id="num_places"></p>
+        </div>
+    </section>
+    <section id="button">
+        <div class="row">
+            <button id="settings-btn" class="inverse">Settings</button>
+        </div>
+    </section>
   </body>
 </html>
