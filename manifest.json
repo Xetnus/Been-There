@@ -2,7 +2,8 @@
   "manifest_version": 2,
 
   "name": "Been There - a Google Maps Utility",
-  "description": "Logs the places you visit on Google Maps for auditing and record keeping.",
+  "short_name": "Been There",
+  "description": "Keep track of which places you've investigated on Google Maps.",
   "version": "1.0",
   "options_page": "options.html",
 
@@ -17,11 +18,10 @@
   "content_scripts": [
     {
       "matches": ["https://*.google.com/*"],
-      "js": ["google.js"]
+      "js": ["script-utility.js"]
     }
   ],
   "permissions": [
-   "storage", "unlimitedStorage", "webRequest", "tabs",
-   "https://maps.googleapis.com/maps/api/place/*"
+     "storage", "unlimitedStorage", "tabs", "activeTab", "https://*.google.com/*"
   ]
 }

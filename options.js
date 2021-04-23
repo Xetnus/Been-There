@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
     deleteButton.addEventListener('click', function() {
         var selectElement = document.getElementById("case-select");
         var selectedCaseName = selectElement.options[selectElement.selectedIndex].text;
-        if(confirm("Data for case \"" + selectedCaseName + "\" will be deleted. You might want to export the data beforehand. Continue?")) {
+        if(confirm("The case \"" + selectedCaseName + "\" will be deleted. You might want to export its data beforehand. Continue?")) {
             chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
                 var caseName = data[GET_ACTIVE_CASE_KEY];
                 var caseKey = CASE_PREFIX_KEY + caseName;

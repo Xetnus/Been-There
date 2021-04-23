@@ -7,6 +7,7 @@ const CURRENT_VERSION = 1;
 const ACTIVE_ICON = "map-pin-active.png";
 const INACTIVE_ICON = "map-pin-inactive.png";
 
+const GOOGLE_REG = /https:\/\/.*\.google\.com\/.+/;
 const PLACE_REG = /(?:http|https):\/\/(?:www\.|)google\.com\/maps\/place\/\S*/;
 const SEARCH_REG = /(?:http|https):\/\/(?:www\.|)google\.com\/maps\/search\/\S*/;
 const HOTEL_ENTITY_REG = /(?:http|https):\/\/(?:www\.|)google\.com\/travel\/hotels\/.+\/entity\/.+?\S*/;
@@ -15,44 +16,39 @@ const HOTEL_LIST_REG = /(?:http|https):\/\/(?:www\.|)google\.com\/travel\/hotels
 // On URL change
 chrome.tabs.onUpdated.addListener(
     function(tabId, changeInfo, tab) {
-        if (changeInfo.url) {
-            if (changeInfo.url.match(PLACE_REG)) {
+        if (changeInfo.url && changeInfo.url.match(GOOGLE_REG)) {
+            var url = changeInfo.url;
+            if (url.match(PLACE_REG)) {
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
-                chrome.tabs.sendMessage(tabId, {
-                    message: 'urlChangeGooglePlace',
-                    url: changeInfo.url
-                });
-            } else if (changeInfo.url.match(SEARCH_REG)) {
+                chrome.tabs.executeScript(
+                    tabId,
+                    { file: 'content-scripts/urlChangeGooglePlace.js' }
+                );
+            } else if (url.match(SEARCH_REG)) {
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
-                chrome.tabs.sendMessage(tabId, {
-                    message: 'urlChangeGoogleSearch',
-                    url: changeInfo.url
-                });
-            } else if (changeInfo.url.match(HOTEL_ENTITY_REG)) {
+                chrome.tabs.executeScript(
+                    tabId,
+                    { file: 'content-scripts/urlChangeGoogleSearch.js' }
+                );
+            } else if (url.match(HOTEL_ENTITY_REG)) {
                 console.log("hotel entity found");
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
-                // var port = chrome.runtime.connect({name: "hotelentity"});
-                chrome.tabs.sendMessage(tabId, {
-                    message: 'urlChangeGoogleHotelEntity',
-                    url: changeInfo.url
-                });
-            } else if (changeInfo.url.match(HOTEL_LIST_REG)) {
+                chrome.tabs.executeScript(
+                    tabId,
+                    { file: 'content-scripts/urlChangeGoogleHotelEntity.js' }
+                );
+            } else if (url.match(HOTEL_LIST_REG)) {
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
-                chrome.tabs.sendMessage(tabId, {
-                    message: 'urlChangeGoogleHotelList',
-                    url: changeInfo.url
-                });
+                chrome.tabs.executeScript(
+                    tabId,
+                    { file: 'content-scripts/urlChangeGoogleHotelList.js' }
+                );
             } else {
                 chrome.browserAction.setIcon({path: INACTIVE_ICON});
-                chrome.tabs.sendMessage(tabId, {
-                    message: 'urlChangeOther',
-                    url: changeInfo.url
-                });
-            }
-        } else if (changeInfo.status) {
-            console.log(changeInfo.status)
-            if (changeInfo.status === "complete") {
-                console.log("complete");
+                chrome.tabs.executeScript(
+                    tabId,
+                    { file: 'content-scripts/urlChangeOther.js' }
+                );
             }
         }
     }
