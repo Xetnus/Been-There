@@ -1,14 +1,14 @@
 // Storage constants
 globalThis.LIST_CASES_KEY = "cases";
 globalThis.GET_ACTIVE_CASE_KEY = "active-case";
-globalThis.CASE_PREFIX_KEY = "case-"
-globalThis.DEFAULT_CASE_NAME = "Default"
+globalThis.CASE_PREFIX_KEY = "case-";
+globalThis.DEFAULT_CASE_NAME = "Default";
 
 globalThis.EYEBALL_UNICODE = "\ud83d\udc41";
 globalThis.QUESTION_UNICODE = "\u2754";
-globalThis.UNSEEN_TOOLTIP = "You've never seen this place before."
-globalThis.SEEN_TOOLTIP = "You've seen this place before."
-globalThis.QUESTION_TOOLTIP = "You may have seen this place before."
+globalThis.UNSEEN_TOOLTIP = "You've never seen this place before.";
+globalThis.SEEN_TOOLTIP = "You've seen this place before.";
+globalThis.QUESTION_TOOLTIP = "You may have seen this place before.";
 globalThis.MAX_WAIT_ITERATIONS = 40;
 
 globalThis.DATA_ATTRIBUTE_URL_REG = /(?:.(?!\/))+$/;

@@ -40,20 +40,15 @@ var waitOnGlobals = setInterval(function() {
 
         addQuestionIcons();
 
-        // If this content script has been executed on this page before,
-        // it's possible that there is currently an observer connected.
-        // This makes sure that no pre-existing observer is running.
-        if (observer) {
-            observer.disconnect();
-        }
-
         // Whenever the scrollbox section is modified, we need to go through
         // all of the places on the page and insert an icon for those places
         // that were newly added. This is particularly necessary when the
         // user scrolls down in the panel and Google loads more places.
         var nodeToObserve = document.body.querySelector(".section-layout .section-scrollbox");
-        var observerConfig = { attributes: true, childList: true, subtree: true }
-        var observer = new MutationObserver(addQuestionIcons);
-        observer.observe(nodeToObserve, observerConfig);
+        if (nodeToObserve) {
+            var observerConfig = { attributes: true, childList: true, subtree: true }
+            var observer = new MutationObserver(addQuestionIcons);
+            observer.observe(nodeToObserve, observerConfig);
+        }
     }
 }, 100);
