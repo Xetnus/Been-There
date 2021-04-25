@@ -1,25 +1,75 @@
-var addSeenIcon = function() {
+var observer;
+
+var beginMonitoring = function() {
+    if (observer) {
+        observer.disconnect();
+    }
+    var nodeToObserve = document.body.querySelector("#interactive-hovercard").querySelector('.widget-pane-content-holder');
+    if (nodeToObserve) {
+        observer = new MutationObserver(handleHovercard);
+        var observerConfig = { attributes: true, childList: true, subtree: true };
+        observer.observe(nodeToObserve, observerConfig);
+    }
+}
+
+var addIcon = function(nameElement, type) {
+    if (type === "question") {
+        var quesElement = globalThis.createIconElement("  " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
+        nameElement.appendChild(quesElement);
+    } else if (type === "seen") {
+        var eyeElement = globalThis.createIconElement(" " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
+        nameElement.appendChild(eyeElement);
+    }
+}
+
+var handleHovercard = function(mutationList, observer) {
     chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
         var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
         chrome.storage.local.get({[caseKey]: []}, function(data) {
             var places = data[caseKey];
-            var placeElement = document.body.querySelector(".hovercard-info-place-actions-container")
-
-            // TODO:
-            // Wait until loading panel is hidden
+            var hovercardElement = document.body.querySelector("#interactive-hovercard");
+            var placeElement = hovercardElement.querySelector(".hovercard-info-place-actions-container");
 
             if (placeElement) {
-                var nameElement = placeElement.parentElement.querySelector('.gm2-subtitle-alt-1');
-
-                if (!nameElement.getAttribute("data-marked")) {
-                    // Because this page doesn't show plus codes, we can only match by name
-                    if (places.some(place => place.name === nameElement.innerText)) {
-                        // Inserts question mark after the ratings/reviews line
-                        var quesElement = globalThis.createIconElement(" " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
-                        nameElement.appendChild(quesElement, nameElement.nextSibling);
-                        nameElement.setAttribute("data-marked", "true");
+                var wait_image_iter = globalThis.MAX_WAIT_ITERATIONS / 2;
+                var checkImageExists = setInterval(function() {
+                    wait_image_iter--;
+                    var nameElement = placeElement.parentElement.querySelector('.gm2-subtitle-alt-1');
+                    if (nameElement.getAttribute("data-marked")) {
+                        clearInterval(checkImageExists);
+                        return;
                     }
-                }
+                    observer.disconnect();
+                    var name = nameElement.innerText;
+                    var imageContainer = hovercardElement.querySelector(".section-carousel-item-container");
+                    if (imageContainer) {
+                        var imageElements = imageContainer.querySelectorAll("img");
+                        if (imageElements && imageElements.length > 0) {
+                            var imageID = globalThis.extractImageIDFromURL(imageElements[0].getAttribute('src'));
+                            clearInterval(checkImageExists);
+                            if (places.some(place => place.name === name)) {
+                                if (places.some(place => place.name === name && place.image === imageID)) {
+                                    addIcon(nameElement, "seen");
+                                } else {
+                                    addIcon(nameElement, "question");
+                                }
+                            }
+                            beginMonitoring();
+                        } else if (wait_image_iter <= 0) {
+                            clearInterval(checkImageExists);
+                            if (places.some(place => place.name === name)) {
+                                addIcon(nameElement, "question");
+                            }
+                            beginMonitoring();
+                        }
+                    } else if (wait_image_iter <= 0) {
+                        clearInterval(checkImageExists);
+                        if (places.some(place => place.name === name)) {
+                            addIcon(nameElement, "question");
+                        }
+                        beginMonitoring();
+                    }
+                }, 100);
             }
         });
     });
@@ -35,16 +85,6 @@ if (waitOnGlobals) {
 var waitOnGlobals = setInterval(function() {
     if (globalThis.GLOBALS_LOADED) {
         clearInterval(waitOnGlobals);
-
-        // Whenever the scrollbox section is modified, we need to go through
-        // all of the places on the page and insert an icon for those places
-        // that were newly added. This is particularly necessary when the
-        // user scrolls down in the panel and Google loads more places.
-        var nodeToObserve = document.body.querySelector("#interactive-hovercard").querySelector('.widget-pane-content-holder');
-        if (nodeToObserve) {
-            var observerConfig = { attributes: true, childList: true, subtree: true }
-            var observer = new MutationObserver(addSeenIcon);
-            observer.observe(nodeToObserve, observerConfig);
-        }
+        beginMonitoring();
     }
 }, 100);

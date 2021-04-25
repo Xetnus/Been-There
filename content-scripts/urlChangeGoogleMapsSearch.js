@@ -7,7 +7,7 @@ previouslyMarked.forEach(function(marked) {
     icon.remove();
 });
 
-var addQuestionIcons = function() {
+var addSeenIcons = function() {
     chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
         var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
         chrome.storage.local.get({[caseKey]: []}, function(data) {
@@ -17,12 +17,28 @@ var addQuestionIcons = function() {
             placesOnPage.forEach(function(placeElement) {
                 var nameElement = placeElement.querySelector("span");
                 if (!nameElement.getAttribute("data-marked")) {
-                    // Because this page doesn't show plus codes, we can only match by name
-                    if (places.some(place => place.name === nameElement.innerText)) {
-                        // Inserts question mark after the ratings/reviews line
-                        var quesElement = globalThis.createIconElement(" " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
-                        nameElement.parentNode.insertBefore(quesElement, nameElement.nextSibling);
-                        nameElement.setAttribute("data-marked", "true");
+                    var name = nameElement.innerText;
+                    var imageElement = placeElement.parentNode.querySelector(".section-place-result-container-image").querySelector("img");
+                    var imageID = "";
+                    if (imageElement) {
+                        imageID = globalThis.extractImageIDFromURL(imageElement.getAttribute('src'));
+                    }
+
+                    if (places.some(place => place.name === name)) {
+                        // If a place matches by name only, then it's still
+                        // possible that the user has seen the place (i.e.,
+                        // the place's image was updated). However, if both
+                        // the name and image match, then we posit that
+                        // it's guaranteed the user has seen it.
+                        if (places.some(place => place.name === name && place.image === imageID)) {
+                            var eyeElement = globalThis.createIconElement(" " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
+                            nameElement.parentNode.insertBefore(eyeElement, nameElement.nextSibling);
+                            nameElement.setAttribute("data-marked", "true");
+                        } else {
+                            var quesElement = globalThis.createIconElement("  " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
+                            nameElement.parentNode.insertBefore(quesElement, nameElement.nextSibling);
+                            nameElement.setAttribute("data-marked", "true");
+                        }
                     }
                 }
             });
@@ -38,7 +54,7 @@ var waitOnGlobals = setInterval(function() {
     if (globalThis.GLOBALS_LOADED) {
         clearInterval(waitOnGlobals);
 
-        addQuestionIcons();
+        addSeenIcons();
 
         // Whenever the scrollbox section is modified, we need to go through
         // all of the places on the page and insert an icon for those places
@@ -47,7 +63,7 @@ var waitOnGlobals = setInterval(function() {
         var nodeToObserve = document.body.querySelector(".section-layout .section-scrollbox");
         if (nodeToObserve) {
             var observerConfig = { attributes: true, childList: true, subtree: true }
-            var observer = new MutationObserver(addQuestionIcons);
+            var observer = new MutationObserver(addSeenIcons);
             observer.observe(nodeToObserve, observerConfig);
         }
     }

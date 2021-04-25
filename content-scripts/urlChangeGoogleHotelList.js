@@ -16,7 +16,7 @@ var operateOnPage = function() {
             var places = data[caseKey];
 
             var wait_iter = globalThis.MAX_WAIT_ITERATIONS;
-            var checkExist = setInterval(function() {
+            var checkPanelLoaded = setInterval(function() {
                 var namesOnPage = document.body.querySelectorAll("h2");
                 var numMarked = document.body.querySelectorAll("[data-marked='true']").length;
                 wait_iter--;
@@ -25,21 +25,40 @@ var operateOnPage = function() {
                 // on the page needs to be > 0 and the number of marked names should be
                 // 0, since the panel doesn't carry over DOM elements on new pages.
                 if (namesOnPage.length > 0 && numMarked == 0) {
-                    clearInterval(checkExist);
+                    clearInterval(checkPanelLoaded);
                     namesOnPage.forEach(function(nameElement) {
                         if (!nameElement.getAttribute("data-marked")) {
-                            // Because this page doesn't show plus codes, we can only match by name
-                            if (places.some(place => place.name === nameElement.innerText)) {
-                                console.log("found " + nameElement.innerText);
-                                // Inserts question mark after the ratings/reviews line
-                                var quesElement = globalThis.createIconElement("  " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
-                                nameElement.parentNode.parentNode.querySelector(":scope > div > a").appendChild(quesElement);
-                                nameElement.setAttribute("data-marked", "true");
+                            var name = nameElement.innerText;
+                            var imageElement = nameElement.closest("c-wiz").querySelector("div[aria-label='Photos'] > div > img");
+                            var imageID = "";
+                            if (imageElement) {
+                                imageID = globalThis.extractImageIDFromURL(imageElement.getAttribute('src'));
+                            }
+
+                            if (places.some(place => place.name === name)) {
+                                // If a place matches by name only, then it's still
+                                // possible that the user has seen the place (i.e.,
+                                // the place's image was updated). However, if both
+                                // the name and image match, then we posit that
+                                // it's guaranteed the user has seen it.
+                                if (places.some(place => place.name === name && place.image === imageID)) {
+                                    console.log("found " + nameElement.innerText);
+                                    // Inserts seen icon after the ratings/reviews line
+                                    var eyeElement = globalThis.createIconElement("  " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
+                                    nameElement.parentNode.parentNode.querySelector(":scope > div > a").appendChild(eyeElement);
+                                    nameElement.setAttribute("data-marked", "true");
+                                } else {
+                                    console.log("possibly found " + nameElement.innerText);
+                                    // Inserts seen icon after the ratings/reviews line
+                                    var quesElement = globalThis.createIconElement("  " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
+                                    nameElement.parentNode.parentNode.querySelector(":scope > div > a").appendChild(quesElement);
+                                    nameElement.setAttribute("data-marked", "true");
+                                }
                             }
                         }
                     });
                 } else if (wait_iter == 0) {
-                    clearInterval(checkExist);
+                    clearInterval(checkPanelLoaded);
                 }
             }, 100);
         });

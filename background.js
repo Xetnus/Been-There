@@ -2,10 +2,10 @@ const LIST_CASES_KEY = "cases";
 const GET_ACTIVE_CASE_KEY = "active-case";
 const CASE_PREFIX_KEY = "case-"
 const DEFAULT_CASE_NAME = "Default"
-const CURRENT_VERSION = 1;
+const CURRENT_VERSION = 0;
 
-const ACTIVE_ICON = "map-pin-active.png";
-const INACTIVE_ICON = "map-pin-inactive.png";
+const ACTIVE_ICON = "assets/map-pin-active.png";
+const INACTIVE_ICON = "assets/map-pin-inactive.png";
 
 const GOOGLE_REG = /(?:http|https):\/\/.*\.google\.com\/.+/;
 const MAPS_REG = /(?:http|https):\/\/(?:www\.|)google\.com\/maps\/@\S*/;
@@ -28,6 +28,9 @@ chrome.tabs.onUpdated.addListener(
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
                 chrome.tabs.executeScript(tabId,
                     { file: 'content-scripts/urlChangeGoogleMapsPlace.js' }
+                );
+                chrome.tabs.executeScript(tabId,
+                    { file: 'content-scripts/urlChangeGoogleMaps.js' }
                 );
             } else if (url.match(SEARCH_REG)) {
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
@@ -87,27 +90,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
         });
     } else if (details.reason === "update") {
         chrome.storage.local.get({version: 0}, function(verData) {
-            if (verData.version === 0) {
-                chrome.storage.local.set({[STORAGE_KEY]: []}, function() {
-                    console.log("Data format updated.");
-                });
-                // chrome.storage.local.get({[STORAGE_KEY]: []}, function(data) {
-                //     var newPlaces = [];
-                //     for (let place of data[STORAGE_KEY]) {
-                //         if (!place.id || !place.plusCode || !place.placeName) {
-                //             continue;
-                //         }
-                //         let newPlace = {}
-                //         newPlace.id = place.id;
-                //         newPlace.code = place.plusCode;
-                //         newPlace.name = place.placeName;
-                //         newPlaces.push(newPlace);
-                //     }
-                //     chrome.storage.local.set({[STORAGE_KEY]: newPlaces}, function() {
-                //         console.log("Data format updated.");
-                //     });
-                //
-                // });
+            if (verData.version === 1) {
             }
         });
 

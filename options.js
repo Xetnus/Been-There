@@ -43,17 +43,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         var lines = content.split("\r\n");
                         for (var i = 1; i < lines.length; i++) {
                             var split = lines[i].split("\",\"");
-                            if (split.length == 3) {
+                            if (split.length == 4) {
                                 split[0] = split[0].substring(1, split[0].length);
-                                split[2] = split[2].substring(0, split[2].length - 1);
+                                split[3] = split[3].substring(0, split[3].length - 1);
                                 var name = split[0];
                                 var code = split[1];
                                 var phone = split[2];
+                                var image = split[3];
                                 var exists = places.some(place => place.name === name
-                                    && place.code === code && place.phone === phone);
+                                    && place.code === code && place.phone === phone
+                                    && place.image === image);
                                 if (!exists) {
-                                    console.log(name + " ---- " + code + " ---- " + phone);
-                                    places.push({name: name, code: code, phone: phone});
+                                    console.log(name + " ---- " + code + " ---- " + phone + " ---- " + image);
+                                    places.push({name: name, code: code, phone: phone, image: image});
                                 }
                             } else {
                                 alert("Something went wrong with the import; check that it's formatted properly. Data not imported.");
@@ -80,11 +82,11 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
             var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
             chrome.storage.local.get({[caseKey]: []}, function(data) {
-                var csvContent = "Place Name,Plus Code,Phone Number\r\n";
+                var csvContent = "Place Name,Plus Code,Phone Number,Image ID\r\n";
                 data[caseKey].forEach(function(place) {
                     // Per CSV standards, replace double quotes with two double quotes
                     var name = place.name.replace(/"/g, '""');
-                    csvContent += "\"" + name + "\",\"" + place.code + "\",\"" + place.phone + "\"\r\n";
+                    csvContent += "\"" + name + "\",\"" + place.code + "\",\"" + place.phone + "\",\"" + place.image + "\"\r\n";
                 });
                 // Remove last new line characters
                 csvContent = csvContent.substring(0, csvContent.length - 2);

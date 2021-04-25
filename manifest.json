@@ -8,7 +8,7 @@
   "options_page": "options.html",
 
   "browser_action": {
-    "default_icon": "map-pin-active.png",
+    "default_icon": "assets/map-pin-active.png",
     "default_popup": "popup.html",
     "default_title": "Been There - a Google Maps Utility"
   },
@@ -18,7 +18,7 @@
   "content_scripts": [
     {
       "matches": ["https://*.google.com/*"],
-      "js": ["script-utility.js"]
+      "js": ["script-utilities.js"]
     }
   ],
   "permissions": [
