@@ -1,5 +1,5 @@
 body {
-    width: 10em;
+    width: 17em;
 }
 
 section {
@@ -15,14 +15,30 @@ section:last-child {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-basis: content;
+    flex-basis: 0;
+    padding: 0;
+    margin: 0;
 }
 
-h1 {
-    flex-shrink: 5;
-    padding: 0;
+#case-select {
+    text-align: center;
+    text-align-last: center;
+    margin: 0;
+    width: 75%;
 }
 
-p {
+#header {
     padding: 0;
+    margin: 0;
+    margin-top: 0.3em;
+}
+
+#num_places {
+    padding: 0;
+    margin: 0;
+}
+
+#bytes {
+    padding: 0;
+    margin: 0;
 }
