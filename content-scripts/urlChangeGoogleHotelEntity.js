@@ -22,7 +22,7 @@ var operateOnPage = function() {
             if (phoneElement) { phone = phoneElement.innerText; }
 
             if (places.some(place => place.name === overviewNameElement.innerText && place.phone === phone)) {
-                var eyeElement = globalThis.createIconElement(" " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
+                var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.seen);
                 overviewNameElement.appendChild(eyeElement);
 
                 // Sponsored hotels get a special "Sponsored" tab

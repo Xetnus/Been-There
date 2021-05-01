@@ -44,13 +44,13 @@ var operateOnPage = function() {
                                 if (places.some(place => place.name === name && place.image === imageID)) {
                                     console.log("found " + nameElement.innerText);
                                     // Inserts seen icon after the ratings/reviews line
-                                    var eyeElement = globalThis.createIconElement("  " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
+                                    var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.seen, "1.3");
                                     nameElement.parentNode.parentNode.querySelector(":scope > div > a").appendChild(eyeElement);
                                     nameElement.setAttribute("data-marked", "true");
                                 } else {
                                     console.log("possibly found " + nameElement.innerText);
                                     // Inserts seen icon after the ratings/reviews line
-                                    var quesElement = globalThis.createIconElement("  " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
+                                    var quesElement = globalThis.createIconElement(globalThis.ICON_TYPES.uncertain, "1.3");
                                     nameElement.parentNode.parentNode.querySelector(":scope > div > a").appendChild(quesElement);
                                     nameElement.setAttribute("data-marked", "true");
                                 }

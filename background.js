@@ -29,9 +29,6 @@ chrome.tabs.onUpdated.addListener(
                 chrome.tabs.executeScript(tabId,
                     { file: 'content-scripts/urlChangeGoogleMapsPlace.js' }
                 );
-                chrome.tabs.executeScript(tabId,
-                    { file: 'content-scripts/urlChangeGoogleMaps.js' }
-                );
             } else if (url.match(SEARCH_REG)) {
                 chrome.browserAction.setIcon({path: ACTIVE_ICON});
                 chrome.tabs.executeScript(tabId,
@@ -99,14 +96,3 @@ chrome.runtime.onInstalled.addListener(function(details) {
         });
     }
 });
-
-// Listens for Google Maps API Request
-// chrome.runtime.onMessage.addListener(
-//     function(request, sender, onSuccess) {
-//         if (request.message === "apiCall") {
-//             fetch(request.url)
-//                 .then(response => response.text())
-//                 .then(responseText => onSuccess(responseText))
-//         }
-//     }
-// );

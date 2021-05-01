@@ -1,3 +1,5 @@
+var mutex;
+
 function logPlaceID(placeName, plusCode, phoneNumber, imageID) {
     chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
         var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
@@ -10,6 +12,7 @@ function logPlaceID(placeName, plusCode, phoneNumber, imageID) {
                     console.log(chrome.runtime.lastError.message);
                     console.error("Unspecified error while storing Place Data");
                 }
+                mutex = false;
             });
         });
     });
@@ -32,6 +35,7 @@ function updateImageID(target, imageID) {
                     console.log(chrome.runtime.lastError.message);
                     console.error("Unspecified error while updating image ID");
                 }
+                mutex = false;
             });
         });
     });
@@ -39,39 +43,45 @@ function updateImageID(target, imageID) {
 
 // Return true if this place has been seen before
 function checkIfSeen(placeName, plusCode, phoneNumber, imageID) {
-    chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
-        var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
-        chrome.storage.local.get({[caseKey]: []}, function(data) {
-            var places = data[caseKey];
+    if (document.body.querySelectorAll(".seen-icon").length == 0 && !mutex) {
+        mutex = true;
+        chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
+            var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
+            chrome.storage.local.get({[caseKey]: []}, function(data) {
+                var places = data[caseKey];
 
-            var match;
-            if (plusCode !== "") {
-                match = places.find(place => place.code === plusCode && place.name === placeName);
-            } else if (phoneNumber !== "") {
-                match = places.find(place => place.phone === phoneNumber && place.name === placeName);
-            }
+                var match;
+                if (plusCode !== "") {
+                    match = places.find(place => place.code === plusCode && place.name === placeName);
+                } else if (phoneNumber !== "") {
+                    match = places.find(place => place.phone === phoneNumber && place.name === placeName);
+                }
 
-            if (!match) {
-                console.log("NOT SEEN");
-                logPlaceID(placeName, plusCode, phoneNumber, imageID)
-                var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
-                if (headerTitleElement) {
-                    var eyeElement = globalThis.createIconElement(" " + globalThis.EYEBALL_UNICODE, globalThis.UNSEEN_TOOLTIP, "lightgreen");
-                    headerTitleElement.appendChild(eyeElement);
+                if (!match) {
+                    console.log("NOT SEEN");
+                    logPlaceID(placeName, plusCode, phoneNumber, imageID)
+                    var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
+                    if (headerTitleElement) {
+                        var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.unseen);
+                        headerTitleElement.appendChild(eyeElement);
+                    }
+                } else {
+                    console.log("SEEN");
+                    var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
+                    if (headerTitleElement) {
+                        var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.seen);
+                        headerTitleElement.appendChild(eyeElement);
+                    }
+
+                    if (match.image !== imageID) {
+                        updateImageID(match, imageID);
+                    } else {
+                        mutex = false;
+                    }
                 }
-            } else {
-                console.log("SEEN");
-                if (match.image !== imageID) {
-                    updateImageID(match, imageID);
-                }
-                var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
-                if (headerTitleElement) {
-                    var eyeElement = globalThis.createIconElement(" " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
-                    headerTitleElement.appendChild(eyeElement);
-                }
-            }
+            });
         });
-    });
+    }
 }
 
 // If this content script has been executed on this page before,
@@ -118,29 +128,26 @@ var operateOnPage = function() {
                     // The data attribute changed, so clear the interval
                     clearInterval(checkPanelLoaded);
 
-                    if (document.body.querySelectorAll(".seen-icon").length == 0) {
-                        var phoneElement = document.body.querySelector("button[data-tooltip='Copy phone number'] > div > div:nth-child(2) > div");
-                        var phone;
-                        if (phoneElement) { phone = phoneElement.innerText; }
+                    var phoneElement = document.body.querySelector("button[data-tooltip='Copy phone number'] > div > div:nth-child(2) > div");
+                    var phone;
+                    if (phoneElement) { phone = phoneElement.innerText; }
 
-                        var wait_image_iter = globalThis.MAX_WAIT_ITERATIONS;
-                        var checkImageExists = setInterval(function() {
-                            wait_image_iter--;
-                            var imageElement = document.body.querySelectorAll(".section-hero-header-image-hero > img")[0];
-                            if (imageElement) {
-                                clearInterval(checkImageExists);
-                                var imageURL = imageElement.getAttribute('src');
-                                var imageID = globalThis.extractImageIDFromURL(imageURL);
-                                console.log("logging image " + imageID);
-                                checkIfSeen(name || "", code || "", phone || "", imageID || "");
-                            } else if (wait_image_iter <= 0) {
-                                clearInterval(checkImageExists);
-                                checkIfSeen(name || "", code || "", phone || "", "");
-                            }
-                        }, 100);
+                    var wait_image_iter = globalThis.MAX_WAIT_ITERATIONS;
+                    var checkImageExists = setInterval(function() {
+                        wait_image_iter--;
+                        var imageElement = document.body.querySelectorAll(".section-hero-header-image-hero > img")[0];
+                        if (imageElement) {
+                            clearInterval(checkImageExists);
+                            var imageURL = imageElement.getAttribute('src');
+                            var imageID = globalThis.extractImageIDFromURL(imageURL);
+                            checkIfSeen(name || "", code || "", phone || "", imageID || "");
+                        } else if (wait_image_iter <= 0) {
+                            clearInterval(checkImageExists);
+                            checkIfSeen(name || "", code || "", phone || "", "");
+                        }
+                    }, 100);
 
-                        window.sessionStorage.setItem('last_data_attribute', data_attr);
-                    }
+                    window.sessionStorage.setItem('last_data_attribute', data_attr);
                 } else {
                     // The wait period isn't up yet, so give the name time to change
                 }

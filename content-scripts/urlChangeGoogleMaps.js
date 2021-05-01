@@ -13,13 +13,8 @@ var beginMonitoring = function() {
 }
 
 var addIcon = function(nameElement, type) {
-    if (type === "question") {
-        var quesElement = globalThis.createIconElement("  " + globalThis.QUESTION_UNICODE, globalThis.QUESTION_TOOLTIP);
-        nameElement.appendChild(quesElement);
-    } else if (type === "seen") {
-        var eyeElement = globalThis.createIconElement(" " + globalThis.EYEBALL_UNICODE, globalThis.SEEN_TOOLTIP);
-        nameElement.appendChild(eyeElement);
-    }
+    var element = globalThis.createIconElement(type);
+    nameElement.appendChild(element);
 }
 
 var handleHovercard = function(mutationList, observer) {
@@ -49,23 +44,23 @@ var handleHovercard = function(mutationList, observer) {
                             clearInterval(checkImageExists);
                             if (places.some(place => place.name === name)) {
                                 if (places.some(place => place.name === name && place.image === imageID)) {
-                                    addIcon(nameElement, "seen");
+                                    addIcon(nameElement, globalThis.ICON_TYPES.seen);
                                 } else {
-                                    addIcon(nameElement, "question");
+                                    addIcon(nameElement, globalThis.ICON_TYPES.uncertain);
                                 }
                             }
                             beginMonitoring();
                         } else if (wait_image_iter <= 0) {
                             clearInterval(checkImageExists);
                             if (places.some(place => place.name === name)) {
-                                addIcon(nameElement, "question");
+                                addIcon(nameElement, globalThis.ICON_TYPES.uncertain);
                             }
                             beginMonitoring();
                         }
                     } else if (wait_image_iter <= 0) {
                         clearInterval(checkImageExists);
                         if (places.some(place => place.name === name)) {
-                            addIcon(nameElement, "question");
+                            addIcon(nameElement, globalThis.ICON_TYPES.uncertain);
                         }
                         beginMonitoring();
                     }
