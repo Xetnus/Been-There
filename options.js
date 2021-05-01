@@ -43,19 +43,20 @@ document.addEventListener('DOMContentLoaded', function() {
                         var lines = content.split("\r\n");
                         for (var i = 1; i < lines.length; i++) {
                             var split = lines[i].split("\",\"");
-                            if (split.length == 4) {
+                            if (split.length == 5) {
                                 split[0] = split[0].substring(1, split[0].length);
-                                split[3] = split[3].substring(0, split[3].length - 1);
+                                split[4] = split[4].substring(0, split[4].length - 1);
                                 var name = split[0];
                                 var code = split[1];
-                                var phone = split[2];
-                                var image = split[3];
+                                var address = split[2];
+                                var phone = split[3];
+                                var image = split[4];
                                 var exists = places.some(place => place.name === name
-                                    && place.code === code && place.phone === phone
-                                    && place.image === image);
+                                    && place.code === code && place.address === address
+                                    && place.phone === phone && place.image === image);
                                 if (!exists) {
-                                    console.log(name + " ---- " + code + " ---- " + phone + " ---- " + image);
-                                    places.push({name: name, code: code, phone: phone, image: image});
+                                    console.log(name + " ---- " + code + " ---- " + address + " ---- " + phone + " ---- " + image);
+                                    places.push({name: name, code: code, address: address, phone: phone, image: image});
                                 }
                             } else {
                                 alert("Something went wrong with the import; check that it's formatted properly. Data not imported.");
@@ -82,11 +83,12 @@ document.addEventListener('DOMContentLoaded', function() {
         chrome.storage.local.get([GET_ACTIVE_CASE_KEY], function(data) {
             var caseKey = CASE_PREFIX_KEY + data[GET_ACTIVE_CASE_KEY];
             chrome.storage.local.get({[caseKey]: []}, function(data) {
-                var csvContent = "Place Name,Plus Code,Phone Number,Image ID\r\n";
+                var csvContent = "Place Name,Plus Code,Address,Phone Number,Image ID\r\n";
                 data[caseKey].forEach(function(place) {
                     // Per CSV standards, replace double quotes with two double quotes
                     var name = place.name.replace(/"/g, '""');
-                    csvContent += "\"" + name + "\",\"" + place.code + "\",\"" + place.phone + "\",\"" + place.image + "\"\r\n";
+                    csvContent += "\"" + name + "\",\"" + place.code + "\",\"" + place.address +
+                        "\",\"" + place.phone + "\",\"" + place.image + "\"\r\n";
                 });
                 // Remove last new line characters
                 csvContent = csvContent.substring(0, csvContent.length - 2);

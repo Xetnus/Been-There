@@ -10,7 +10,6 @@ var waitOnGlobals = setInterval(function() {
 }, 100);
 
 var operateOnPage = function() {
-    console.log("hotel entity");
     chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
         var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
         chrome.storage.local.get({[caseKey]: []}, function(data) {

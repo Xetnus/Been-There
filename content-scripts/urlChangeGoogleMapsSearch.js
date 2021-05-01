@@ -6,23 +6,38 @@ previouslyMarked.forEach(function(marked) {
 });
 document.body.querySelectorAll(".seen-icon").forEach(e => e.parentNode.removeChild(e));
 
-var checkIfSeen = function(places, nameElement, imageID) {
+var checkIfSeen = function(places, nameElement, imageID, spans) {
     if (nameElement.parentNode.querySelectorAll(".seen-icon").length == 0) {
         var name = nameElement.innerText;
         if (places.some(place => place.name === name)) {
-            // If a place matches by name only, then it's still
-            // possible that the user has seen the place (i.e.,
-            // the place's image was updated). However, if both
-            // the name and image match, then we posit that
+            // If a place matches by name only, then it's possible the user has
+            // seen the place. However, if either the address, image, or phone
+            // number match, in addition to the place name, then we posit that
             // it's guaranteed the user has seen it.
             if (places.some(place => place.name === name && place.image === imageID)) {
                 var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.seen, "1.2");
                 nameElement.parentNode.insertBefore(eyeElement, nameElement.nextSibling);
                 nameElement.setAttribute("data-marked", "true");
             } else {
-                var quesElement = globalThis.createIconElement(globalThis.ICON_TYPES.uncertain, "1.2");
-                nameElement.parentNode.insertBefore(quesElement, nameElement.nextSibling);
-                nameElement.setAttribute("data-marked", "true");
+                var found = false;
+                spans.forEach(function(span) {
+                    var value = span.innerText;
+                    console.log(value);
+                    if (places.some(place => place.name === name &&
+                            (place.address.includes(value) || place.phone === value))) {
+                        var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.seen, "1.2");
+                        nameElement.parentNode.insertBefore(eyeElement, nameElement.nextSibling);
+                        nameElement.setAttribute("data-marked", "true");
+                        found = true;
+                        return;
+                    }
+                });
+
+                if (!found) {
+                    var quesElement = globalThis.createIconElement(globalThis.ICON_TYPES.uncertain, "1");
+                    nameElement.parentNode.insertBefore(quesElement, nameElement.nextSibling);
+                    nameElement.setAttribute("data-marked", "true");
+                }
             }
         }
     }
@@ -38,20 +53,28 @@ var addSeenIcons = function() {
             var placesOnPage = document.body.querySelectorAll("div.section-place-result-container-summary");
 
             placesOnPage.forEach(function(placeElement) {
+                var spans = Array.from(placeElement.querySelector(".mapsConsumerUiSubviewSectionGm2Placesummary__info-line:last-child").querySelectorAll("span"));
+                // Any span returned in this query could potentially contain the
+                // phone number or address of the place. We can filter the spans
+                // by their number of children (the address and phone number
+                // spans don't have children) and the length of their inner text.
+                // A length of three was arbitrarily chosen.
+                spans = spans.filter(span => span.children.length == 0 && span.innerText.length > 3);
+
                 var nameElement = placeElement.querySelector("span");
                 if (!nameElement.getAttribute("data-marked")) {
                     // Sometimes the images need some time to load.
-                    var wait_image_iter = globalThis.MAX_WAIT_ITERATIONS / 2;
+                    var waitImageIter = globalThis.MAX_WAIT_ITERATIONS / 2;
                     var checkImageExists = setInterval(function() {
-                        wait_image_iter--;
+                        waitImageIter--;
                         var imageElement = placeElement.parentNode.querySelector(".section-place-result-container-image").querySelector("img");
                         if (imageElement) {
                             clearInterval(checkImageExists);
                             var imageID = globalThis.extractImageIDFromURL(imageElement.getAttribute('src'));
-                            checkIfSeen(places, nameElement, imageID);
-                        } else if (wait_image_iter <= 0) {
+                            checkIfSeen(places, nameElement, imageID, spans);
+                        } else if (waitImageIter <= 0) {
                             clearInterval(checkImageExists);
-                            checkIfSeen(places, nameElement, "");
+                            checkIfSeen(places, nameElement, "", spans);
                         }
                     }, 100);
                 }

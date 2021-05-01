@@ -4,6 +4,7 @@ globalThis.GET_ACTIVE_CASE_KEY = "active-case";
 globalThis.CASE_PREFIX_KEY = "case-";
 globalThis.DEFAULT_CASE_NAME = "Default";
 
+globalThis.UPDATE_TYPE = Object.freeze({"image":1, "phone":2, "address":3});
 globalThis.ICON_TYPES = Object.freeze({"seen":1, "unseen":2, "uncertain":3});
 globalThis.SEEN_UNICODE = "\ud83d\udc41";
 globalThis.QUESTION_UNICODE = "\u2754";
@@ -59,6 +60,68 @@ globalThis.extractImageIDFromURL = function(url) {
             console.log("UNRECOGNIZED IMAGE URL " + url);
     }
     return id;
+}
+
+globalThis.logPlace = function(placeName, plusCode, address, phoneNumber, imageID) {
+    chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
+        var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
+        chrome.storage.local.get({[caseKey]: []}, function(data) {
+            var places = data[caseKey];
+            places.push({name: placeName, code: plusCode, address: address, phone: phoneNumber, image: imageID});
+
+            chrome.storage.local.set({[caseKey]: places}, function() {
+                if (chrome.runtime.lastError) {
+                    console.log(chrome.runtime.lastError.message);
+                    console.error("Unspecified error while storing Place Data");
+                }
+            });
+        });
+    });
+}
+
+globalThis.updateValue = function(target, updateType, updateValue) {
+    chrome.storage.local.get([globalThis.GET_ACTIVE_CASE_KEY], function(data) {
+        var caseKey = globalThis.CASE_PREFIX_KEY + data[globalThis.GET_ACTIVE_CASE_KEY];
+        chrome.storage.local.get({[caseKey]: []}, function(data) {
+            var places = data[caseKey];
+
+            switch (updateType) {
+                case globalThis.UPDATE_TYPE.image:
+                    for (var i = 0; i < places.length; i++) {
+                        if (places[i].name === target.name && places[i].code === target.code) {
+                            places[i].image = updateValue;
+                            break;
+                        }
+                    }
+                    break;
+                case globalThis.UPDATE_TYPE.phone:
+                    for (var i = 0; i < places.length; i++) {
+                        if (places[i].name === target.name && places[i].code === target.code) {
+                            places[i].phone = updateValue;
+                            break;
+                        }
+                    }
+                    break;
+                case globalThis.UPDATE_TYPE.address:
+                    for (var i = 0; i < places.length; i++) {
+                        if (places[i].name === target.name && places[i].code === target.code) {
+                            places[i].address = updateValue;
+                            break;
+                        }
+                    }
+                    break;
+                default:
+                    console.error("Value for " + target + " not updated.");
+            }
+
+            chrome.storage.local.set({[caseKey]: places}, function() {
+                if (chrome.runtime.lastError) {
+                    console.log(chrome.runtime.lastError.message);
+                    console.error("Unspecified error while updating image ID");
+                }
+            });
+        });
+    });
 }
 
 globalThis.GLOBALS_LOADED = true;

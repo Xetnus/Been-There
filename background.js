@@ -2,7 +2,7 @@ const LIST_CASES_KEY = "cases";
 const GET_ACTIVE_CASE_KEY = "active-case";
 const CASE_PREFIX_KEY = "case-"
 const DEFAULT_CASE_NAME = "Default"
-const CURRENT_VERSION = 0;
+const CURRENT_VERSION = 1;
 
 const ACTIVE_ICON = "assets/map-pin-active.png";
 const INACTIVE_ICON = "assets/map-pin-inactive.png";
@@ -87,12 +87,32 @@ chrome.runtime.onInstalled.addListener(function(details) {
         });
     } else if (details.reason === "update") {
         chrome.storage.local.get({version: 0}, function(verData) {
-            if (verData.version === 1) {
-            }
-        });
+            if (verData.version === 0) {
+                chrome.storage.local.get([LIST_CASES_KEY], function(data) {
+                    var cases = data[LIST_CASES_KEY];
+                    cases.forEach(function(caseName) {
+                        var caseKey = CASE_PREFIX_KEY + caseName;
+                        chrome.storage.local.get({[caseKey]: []}, function(data) {
+                            var places = data[caseKey];
 
-        chrome.storage.local.set({version: CURRENT_VERSION}, function() {
-            console.log("Plugin updated.")
+                            for (var i = 0; i < places.length; i++) {
+                                places[i].address = "";
+                            }
+
+                            chrome.storage.local.set({[caseKey]: places}, function() {
+                                if (chrome.runtime.lastError) {
+                                    console.log(chrome.runtime.lastError.message);
+                                    console.error("Unspecified error while storing Place Data");
+                                }
+                            });
+
+                            chrome.storage.local.set({version: CURRENT_VERSION}, function() {
+                                console.log("Plugin updated.")
+                            });
+                        });
+                    });
+                });
+            }
         });
     }
 });

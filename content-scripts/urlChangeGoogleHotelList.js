@@ -15,11 +15,11 @@ var operateOnPage = function() {
         chrome.storage.local.get({[caseKey]: []}, function(data) {
             var places = data[caseKey];
 
-            var wait_iter = globalThis.MAX_WAIT_ITERATIONS;
+            var waitIter = globalThis.MAX_WAIT_ITERATIONS;
             var checkPanelLoaded = setInterval(function() {
                 var namesOnPage = document.body.querySelectorAll("h2");
                 var numMarked = document.body.querySelectorAll("[data-marked='true']").length;
-                wait_iter--;
+                waitIter--;
 
                 // We need to wait for the panel elements to load. The number of names
                 // on the page needs to be > 0 and the number of marked names should be
@@ -57,7 +57,7 @@ var operateOnPage = function() {
                             }
                         }
                     });
-                } else if (wait_iter == 0) {
+                } else if (waitIter == 0) {
                     clearInterval(checkPanelLoaded);
                 }
             }, 100);

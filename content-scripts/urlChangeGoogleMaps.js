@@ -26,9 +26,9 @@ var handleHovercard = function(mutationList, observer) {
             var placeElement = hovercardElement.querySelector(".hovercard-info-place-actions-container");
 
             if (placeElement) {
-                var wait_image_iter = globalThis.MAX_WAIT_ITERATIONS / 2;
+                var waitImageIter = globalThis.MAX_WAIT_ITERATIONS / 2;
                 var checkImageExists = setInterval(function() {
-                    wait_image_iter--;
+                    waitImageIter--;
                     var nameElement = placeElement.parentElement.querySelector('.gm2-subtitle-alt-1');
                     if (nameElement.getAttribute("data-marked")) {
                         clearInterval(checkImageExists);
@@ -50,14 +50,14 @@ var handleHovercard = function(mutationList, observer) {
                                 }
                             }
                             beginMonitoring();
-                        } else if (wait_image_iter <= 0) {
+                        } else if (waitImageIter <= 0) {
                             clearInterval(checkImageExists);
                             if (places.some(place => place.name === name)) {
                                 addIcon(nameElement, globalThis.ICON_TYPES.uncertain);
                             }
                             beginMonitoring();
                         }
-                    } else if (wait_image_iter <= 0) {
+                    } else if (waitImageIter <= 0) {
                         clearInterval(checkImageExists);
                         if (places.some(place => place.name === name)) {
                             addIcon(nameElement, globalThis.ICON_TYPES.uncertain);
