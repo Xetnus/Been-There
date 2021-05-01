@@ -1,4 +1,4 @@
-#Been There - a Google Maps Utility
+# Been There - a Google Maps Utility
 
 Been There is a Chrome extension that tracks which places you've seen on
 Google Maps. This extension was created with OSINT investigations in mind,
