@@ -23,24 +23,24 @@ var handleHovercard = function(mutationList, observer) {
         chrome.storage.local.get({[caseKey]: []}, function(data) {
             var places = data[caseKey];
             var hovercardElement = document.body.querySelector("#interactive-hovercard");
-            var placeElement = hovercardElement.querySelector(".hovercard-info-place-actions-container");
+            var placeElement = hovercardElement.querySelector(".widget-pane-content-holder > .section-layout");
 
             if (placeElement) {
                 var waitImageIter = globalThis.MAX_WAIT_ITERATIONS / 2;
                 var checkImageExists = setInterval(function() {
                     waitImageIter--;
-                    var nameElement = placeElement.parentElement.querySelector('.gm2-subtitle-alt-1');
-                    if (nameElement.getAttribute("data-marked")) {
+                    var nameElement = placeElement.querySelector('.gm2-subtitle-alt-1');
+                    if (nameElement && nameElement.getAttribute("data-marked")) {
                         clearInterval(checkImageExists);
                         return;
                     }
                     observer.disconnect();
                     var name = nameElement.innerText;
-                    var imageContainer = hovercardElement.querySelector(".section-carousel-item-container");
+                    var imageContainer = hovercardElement.querySelector(".image-container");
                     if (imageContainer) {
-                        var imageElements = imageContainer.querySelectorAll("img");
-                        if (imageElements && imageElements.length > 0) {
-                            var imageID = globalThis.extractImageIDFromURL(imageElements[0].getAttribute('src'));
+                        var imageElement = imageContainer.querySelector("img");
+                        if (imageElement) {
+                            var imageID = globalThis.extractImageIDFromURL(imageElement.getAttribute('src'));
                             clearInterval(checkImageExists);
                             if (places.some(place => place.name === name)) {
                                 if (places.some(place => place.name === name && place.image === imageID)) {

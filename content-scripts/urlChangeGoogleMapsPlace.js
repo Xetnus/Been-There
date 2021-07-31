@@ -17,14 +17,14 @@ function checkIfSeen(placeName, plusCode, address, phoneNumber, imageID) {
                 if (!match) {
                     console.log("NOT SEEN");
                     globalThis.logPlace(placeName, plusCode, address, phoneNumber, imageID);
-                    var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
+                    var headerTitleElement = document.body.querySelector("h1[class*='header-title-title']");
                     if (headerTitleElement) {
                         var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.unseen);
                         headerTitleElement.appendChild(eyeElement);
                     }
                 } else {
                     console.log("SEEN");
-                    var headerTitleElement = document.body.querySelector("h1.section-hero-header-title-title");
+                    var headerTitleElement = document.body.querySelector("h1[class*='header-title-title']");
                     if (headerTitleElement) {
                         var eyeElement = globalThis.createIconElement(globalThis.ICON_TYPES.seen);
                         headerTitleElement.appendChild(eyeElement);
@@ -54,7 +54,7 @@ function operateOnPage() {
         var mainPanelElement = document.body.querySelector("div[role='main']");
         if (mainPanelElement || waitPanelIter <= 0) {
             var name;
-            var mainPanelNameElement = document.body.querySelector("h1.section-hero-header-title-title");
+            var mainPanelNameElement = document.body.querySelector("h1[class*='header-title-title']");
             if (mainPanelNameElement) {
                 // We're on the main panel
                 name = mainPanelNameElement.getElementsByTagName('span')[0].innerText;
@@ -86,7 +86,7 @@ function operateOnPage() {
                     var waitImageIter = globalThis.MAX_WAIT_ITERATIONS;
                     var checkImageExists = setInterval(function() {
                         waitImageIter--;
-                        var imageElement = document.body.querySelectorAll(".section-hero-header-image-hero > img")[0];
+                        var imageElement = document.body.querySelectorAll(".section-hero-header-image-hero-container > button > img")[0];
                         if (imageElement) {
                             clearInterval(checkImageExists);
                             var imageURL = imageElement.getAttribute('src');
